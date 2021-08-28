@@ -8,13 +8,13 @@ Ecu = car.CarParams.Ecu
 class CarControllerParams:
   def __init__(self, CP):
     if CP.carFingerprint in [CAR.GRANDEUR, CAR.GRANDEUR_HEV, CAR.GRANDEUR20, CAR.GRANDEUR20_HEV, CAR.CADENZA, CAR.CADENZA_HEV]:
-      self.STEER_MAX = 255
+      self.STEER_MAX = 409
       self.STEER_DELTA_UP = 3
       self.STEER_DELTA_DOWN = 5
     else:
-      self.STEER_MAX = 384
+      self.STEER_MAX = 409
       self.STEER_DELTA_UP = 3
-      self.STEER_DELTA_DOWN = 7
+      self.STEER_DELTA_DOWN = 5
     self.STEER_DRIVER_ALLOWANCE = 50
     self.STEER_DRIVER_MULTIPLIER = 2
     self.STEER_DRIVER_FACTOR = 1
