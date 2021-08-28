@@ -8,7 +8,8 @@ hyundai_checksum = crcmod.mkCrcFun(0x11D, initCrc=0xFD, rev=False, xorOut=0xdf)
 def create_lkas11(packer, frame, car_fingerprint, apply_steer, steer_req, lkas11, sys_warning, sys_state,
                   enabled, left_lane, right_lane, left_lane_depart, right_lane_depart, bus):
   values = copy.copy(lkas11)
-  values["CF_Lkas_LdwsSysState"] = sys_state
+  #values["CF_Lkas_LdwsSysState"] = sys_state
+  values["CF_Lkas_LdwsSysState"] = 3 if enabled else sys_state
   values["CF_Lkas_SysWarning"] = 3 if sys_warning else 0
   values["CF_Lkas_LdwsLHWarning"] = left_lane_depart
   values["CF_Lkas_LdwsRHWarning"] = right_lane_depart
@@ -23,20 +24,22 @@ def create_lkas11(packer, frame, car_fingerprint, apply_steer, steer_req, lkas11
     values["CF_Lkas_SysWarning"] = lkas11["CF_Lkas_SysWarning"]
 
   elif car_fingerprint in [CAR.OPTIMA, CAR.OPTIMA_HEV, CAR.CADENZA, CAR.CADENZA_HEV]:
-    values["CF_Lkas_LdwsActivemode"] = 0
-
+    values["CF_Lkas_LdwsActivemode"] = 2
+    values["CF_Lkas_FcwOpt_USM"] = 1
+    values["CF_Lkas_LdwsOpt_USM"] = 3
+    
   # This field is LDWS Mfc car ( qt ui toggle set )
   if Params().get("MfcSelect", encoding='utf8') == "1":
-    values["CF_Lkas_LdwsActivemode"] = 0
+    values["CF_Lkas_LdwsActivemode"] = 2
     values["CF_Lkas_LdwsOpt_USM"] = 3
-    values["CF_Lkas_FcwOpt_USM"] = 2 if enabled else 1
+    values["CF_Lkas_FcwOpt_USM"] = 1
 #    values["CF_Lkas_SysWarning"] = 4 if sys_warning else 0
 
   # This field is LFA Mfc car ( qt ui toggle set )
   if Params().get("MfcSelect", encoding='utf8') == "2":
     values["CF_Lkas_LdwsActivemode"] = int(left_lane) + (int(right_lane) << 1)
     values["CF_Lkas_LdwsOpt_USM"] = 2
-    values["CF_Lkas_FcwOpt_USM"] = 2 if enabled else 1
+    values["CF_Lkas_FcwOpt_USM"] = 1
     values["CF_Lkas_SysWarning"] = 4 if sys_warning else 0
     # ---------------------------------------------------------------------------------------
     # FcwOpt_USM 0 = No car + lanes
