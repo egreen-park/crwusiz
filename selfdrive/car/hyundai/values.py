@@ -7,13 +7,13 @@ Ecu = car.CarParams.Ecu
 class CarControllerParams:
   def __init__(self, CP):
     if CP.carFingerprint in [CAR.GRANDEUR, CAR.GRANDEUR_HEV, CAR.GRANDEUR20, CAR.GRANDEUR20_HEV, CAR.K7, CAR.K7_HEV]:
-      self.STEER_MAX = 255
+      self.STEER_MAX = 409
       self.STEER_DELTA_UP = 3
       self.STEER_DELTA_DOWN = 5
     else:
-      self.STEER_MAX = 384
+      self.STEER_MAX = 409
       self.STEER_DELTA_UP = 3
-      self.STEER_DELTA_DOWN = 7
+      self.STEER_DELTA_DOWN = 5
     self.STEER_DRIVER_ALLOWANCE = 50
     self.STEER_DRIVER_MULTIPLIER = 2
     self.STEER_DRIVER_FACTOR = 1
@@ -731,8 +731,8 @@ FEATURES = {
   "not_lkas": # not lkas error car set
     set([CAR.SONATA, CAR.SONATA_HEV, CAR.PALISADE, CAR.SANTA_FE, CAR.KONA, CAR.KONA_EV, CAR.NIRO_EV]),
   "tcs13_remove": set([CAR.SANTA_FE]),
-  "has_scc13": set([CAR.K9]), # scc13 signal
-  "has_scc14": set([CAR.K9]), # scc14 signal
+  "has_scc13": set([CAR.K9, CAR.K7]), # scc13 signal
+  "has_scc14": set([CAR.K9, CAR.K7]), # scc14 signal
   # new lfa car - carcontroller lfamfc / hyundaican lfamfc using qt ui mfcselect toggle set
 }
 
