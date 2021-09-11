@@ -196,7 +196,6 @@ DevicePanel::DevicePanel(QWidget* parent) : QWidget(parent) {
     connect(retrainingBtn, &ButtonControl::clicked, [=]() {
       //if (ConfirmationDialog::confirm("Process?", this)) {
       if (ConfirmationDialog::confirm("실행하시겠습니까?", this)) {
-        Params().remove("CompletedTrainingVersion");
         emit reviewTrainingGuide();
       }
     });

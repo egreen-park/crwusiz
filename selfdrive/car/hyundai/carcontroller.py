@@ -6,25 +6,19 @@ from selfdrive.car import apply_std_steer_torque_limits
 from selfdrive.car.hyundai.hyundaican import create_lkas11, create_clu11, \
                                              create_scc11, create_scc12, create_scc13, create_scc14, \
                                              create_mdps12, create_lfahda_mfc, create_hda_mfc
-from selfdrive.car.hyundai.values import Buttons, CarControllerParams, CAR
+from selfdrive.car.hyundai.values import CarControllerParams, Buttons, CAR
 from opendbc.can.packer import CANPacker
 from selfdrive.config import Conversions as CV
 
 VisualAlert = car.CarControl.HUDControl.VisualAlert
 min_set_speed = 30 * CV.KPH_TO_MS
 
-# Accel limits
-ACCEL_HYST_GAP = 0.02  # don't change accel command for small oscilalitons within this value
-ACCEL_MAX = 1.5
-ACCEL_MIN = -4.0
-ACCEL_SCALE = 3.0  # max(ACCEL_MAX, -ACCEL_MIN)
-
 def accel_hysteresis(accel, accel_steady):
   # for small accel oscillations within ACCEL_HYST_GAP, don't change the accel command
-  if accel > accel_steady + ACCEL_HYST_GAP:
-    accel_steady = accel - ACCEL_HYST_GAP
-  elif accel < accel_steady - ACCEL_HYST_GAP:
-    accel_steady = accel + ACCEL_HYST_GAP
+  if accel > accel_steady + CarControllerParams.ACCEL_HYST_GAP:
+    accel_steady = accel - CarControllerParams.ACCEL_HYST_GAP
+  elif accel < accel_steady - CarControllerParams.ACCEL_HYST_GAP:
+    accel_steady = accel + CarControllerParams.ACCEL_HYST_GAP
   accel = accel_steady
 
   return accel, accel_steady
@@ -55,7 +49,6 @@ def process_hud_alert(enabled, fingerprint, visual_alert, left_lane, right_lane,
 
 class CarController():
   def __init__(self, dbc_name, CP, VM):
-    self.p = CarControllerParams(CP)
     self.car_fingerprint = CP.carFingerprint
     self.packer = CANPacker(dbc_name)
     self.accel_steady = 0
@@ -79,13 +72,13 @@ class CarController():
     # *** compute control surfaces ***
 
     # gas and brake
-    apply_accel = actuators.accel / ACCEL_SCALE
+    apply_accel = actuators.accel / CarControllerParams.ACCEL_SCALE
     apply_accel, self.accel_steady = accel_hysteresis(apply_accel, self.accel_steady)
-    apply_accel = clip(apply_accel * ACCEL_SCALE, ACCEL_MIN, ACCEL_MAX)
+    apply_accel = clip(apply_accel * CarControllerParams.ACCEL_SCALE, CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX)
 
     # Steering Torque
-    new_steer = int(round(actuators.steer * self.p.STEER_MAX))
-    apply_steer = apply_std_steer_torque_limits(new_steer, self.apply_steer_last, CS.out.steeringTorque, self.p)
+    new_steer = int(round(actuators.steer * CarControllerParams.STEER_MAX))
+    apply_steer = apply_std_steer_torque_limits(new_steer, self.apply_steer_last, CS.out.steeringTorque, CarControllerParams)
     self.steer_rate_limited = new_steer != apply_steer
 
     # disable if steer angle reach 90 deg, otherwise mdps fault in some models

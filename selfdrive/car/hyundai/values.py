@@ -5,18 +5,20 @@ from selfdrive.car import dbc_dict
 Ecu = car.CarParams.Ecu
 
 class CarControllerParams:
-  def __init__(self, CP):
-    if CP.carFingerprint in [CAR.GRANDEUR, CAR.GRANDEUR_HEV, CAR.GRANDEUR20, CAR.GRANDEUR20_HEV, CAR.K7, CAR.K7_HEV]:
-      self.STEER_MAX = 255
-      self.STEER_DELTA_UP = 3
-      self.STEER_DELTA_DOWN = 5
-    else:
-      self.STEER_MAX = 384
-      self.STEER_DELTA_UP = 3
-      self.STEER_DELTA_DOWN = 7
-    self.STEER_DRIVER_ALLOWANCE = 50
-    self.STEER_DRIVER_MULTIPLIER = 2
-    self.STEER_DRIVER_FACTOR = 1
+  # SteerLimitParams
+  STEER_MAX = 384
+  STEER_DELTA_UP = 3
+  STEER_DELTA_DOWN = 7
+  STEER_DRIVER_ALLOWANCE = 50
+  STEER_DRIVER_MULTIPLIER = 2
+  STEER_DRIVER_FACTOR = 1
+  STEER_THRESHOLD = 150
+
+  # AccellimitParams
+  ACCEL_HYST_GAP = 0.02  # don't change accel command for small oscilalitons within this value
+  ACCEL_MAX = 1.5
+  ACCEL_MIN = -4.0
+  ACCEL_SCALE = 3.0  # max(ACCEL_MAX, -ACCEL_MIN)
 
 class CAR:
   # genesis
@@ -783,8 +785,6 @@ DBC = {
   CAR.K7_HEV: dbc_dict('hyundai_kia_generic', None),
   CAR.K9: dbc_dict('hyundai_kia_generic', None),
 }
-
-STEER_THRESHOLD = 150
 
 def main():
   for member, value in vars(CAR).items():

@@ -97,19 +97,12 @@ function two_init {
   # Check for NEOS update
   if $(grep -q "letv" /proc/cmdline); then
   if [ $(< /VERSION) != "$REQUIRED_NEOS_VERSION" ]; then
-    if [ -f "$DIR/scripts/continue.sh" ]; then
-      cp "$DIR/scripts/continue.sh" "/data/data/com.termux/files/continue.sh"
-    fi
-
-    if [ ! -f "$BASEDIR/prebuilt" ]; then
-      # Clean old build products, but preserve the scons cache
-      cd $DIR
-      git clean -xdf
-      git submodule foreach --recursive git clean -xdf
-    fi
-
-    "$DIR/installer/updater/updater" "file://$DIR/installer/updater/update.json"
-    fi
+    echo "Installing NEOS update"
+    NEOS_PY="$DIR/selfdrive/hardware/eon/neos.py"
+    MANIFEST="$DIR/selfdrive/hardware/eon/neos.json"
+    $NEOS_PY --swap-if-ready $MANIFEST
+    $DIR/selfdrive/hardware/eon/updater $NEOS_PY $MANIFEST
+  fi
   else
     echo -n 0 > /data/params/d/DisableUpdates
   fi
@@ -187,11 +180,6 @@ function launch {
           mv $BASEDIR /data/safe_staging/old_openpilot
           mv "${STAGING_ROOT}/finalized" $BASEDIR
           cd $BASEDIR
-
-          # Partial mitigation for symlink-related filesystem corruption
-          # Ensure all files match the repo versions after update
-          git reset --hard
-          git submodule foreach --recursive git reset --hard
 
           echo "Restarting launch script ${LAUNCHER_LOCATION}"
           unset REQUIRED_NEOS_VERSION

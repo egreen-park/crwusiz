@@ -1,5 +1,5 @@
 from cereal import car
-from selfdrive.car.hyundai.values import DBC, STEER_THRESHOLD, FEATURES
+from selfdrive.car.hyundai.values import CarControllerParams, DBC, FEATURES
 from selfdrive.car.interfaces import CarStateBase
 from opendbc.can.parser import CANParser
 from opendbc.can.can_define import CANDefine
@@ -82,7 +82,7 @@ class CarState(CarStateBase):
     ret.steeringTorque = cp_mdps.vl["MDPS12"]["CR_Mdps_StrColTq"]
     ret.steeringTorqueEps = cp_mdps.vl["MDPS12"]["CR_Mdps_OutTq"]
     ret.steeringWheelTorque = cp_mdps.vl["MDPS11"]["CR_Mdps_DrvTq"]
-    ret.steeringPressed = abs(ret.steeringTorque) > STEER_THRESHOLD
+    ret.steeringPressed = abs(ret.steeringTorque) > CarControllerParams.STEER_THRESHOLD
     #ret.steerWarning = cp.vl["MDPS12"]["CF_Mdps_ToiUnavail"] != 0 or cp.vl["MDPS12"]["CF_Mdps_ToiFlt"] != 0
 
     if not ret.standstill and cp_mdps.vl["MDPS12"]['CF_Mdps_ToiUnavail'] != 0:
