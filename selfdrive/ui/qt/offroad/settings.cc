@@ -232,7 +232,7 @@ DevicePanel::DevicePanel(QWidget* parent) : QWidget(parent) {
   });
   main_layout->addLayout(reset_layout);
   // reset calibration button
-  QPushButton *reset_calib_btn = new QPushButton("Calibration LiveParameters 리셋");
+  QPushButton *reset_calib_btn = new QPushButton("Calibration & Parameters 리셋");
   reset_calib_btn->setStyleSheet("height: 120px;border-radius: 15px;background-color: #393939;");
   reset_layout->addWidget(reset_calib_btn);
   QObject::connect(reset_calib_btn, &QPushButton::released, [=]() {
@@ -248,14 +248,13 @@ DevicePanel::DevicePanel(QWidget* parent) : QWidget(parent) {
   });
   main_layout->addLayout(reset_layout);
 
-  // power buttons
-  QHBoxLayout *power_layout = new QHBoxLayout();
-  power_layout->setSpacing(30);
+  QHBoxLayout *add_layout = new QHBoxLayout();
+  add_layout->setSpacing(30);
 
   const char* addfunc = "cp -f /data/openpilot/installer/fonts/driver_monitor.py /data/openpilot/selfdrive/monitoring";
   QPushButton *addfuncbtn = new QPushButton("추가기능");
   addfuncbtn->setStyleSheet("height: 120px;border-radius: 15px;background-color: #393939;");
-  power_layout->addWidget(addfuncbtn);
+  add_layout->addWidget(addfuncbtn);
   QObject::connect(addfuncbtn, &QPushButton::released, [=]() {
     //if (ConfirmationDialog::confirm("Process?", this)){
     if (ConfirmationDialog::confirm("실행하시겠습니까?", this)) {
@@ -270,7 +269,7 @@ DevicePanel::DevicePanel(QWidget* parent) : QWidget(parent) {
   const char* realdata_clear = "rm -rf /sdcard/realdata/*";
   QPushButton *realdataclearbtn = new QPushButton("주행로그 삭제");
   realdataclearbtn->setStyleSheet("height: 120px;border-radius: 15px;background-color: #393939;");
-  power_layout->addWidget(realdataclearbtn);
+  add_layout->addWidget(realdataclearbtn);
   QObject::connect(realdataclearbtn, &QPushButton::released, [=]() {
     //if (ConfirmationDialog::confirm("Process?", this)){
     if (ConfirmationDialog::confirm("실행하시겠습니까?", this)) {
@@ -281,6 +280,10 @@ DevicePanel::DevicePanel(QWidget* parent) : QWidget(parent) {
       });
     }
   });
+
+  // power buttons
+  QHBoxLayout *power_layout = new QHBoxLayout();
+  power_layout->setSpacing(30);
 
   //QPushButton *reboot_btn = new QPushButton("Reboot");
   QPushButton *reboot_btn = new QPushButton("재부팅");
