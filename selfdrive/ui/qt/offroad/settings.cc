@@ -213,7 +213,7 @@ DevicePanel::DevicePanel(QWidget* parent) : QWidget(parent) {
 
   for (auto btn : {dcamBtn, retrainingBtn, regulatoryBtn, resetCalibBtn}) {
     if (btn) {
-      connect(parent, SIGNAL(offroadTransition(bool)), btn, SLOT(setEnabled(false)));
+      connect(parent, SIGNAL(offroadTransition(bool)), btn, SLOT(setEnabled(bool)));
       main_layout->addWidget(btn);
     }
   }
@@ -232,7 +232,7 @@ DevicePanel::DevicePanel(QWidget* parent) : QWidget(parent) {
   });
   main_layout->addLayout(reset_layout);
   // reset calibration button
-  QPushButton *reset_calib_btn = new QPushButton("Calibration & Parameters 리셋");
+  QPushButton *reset_calib_btn = new QPushButton("Calibration,Parameters 리셋");
   reset_calib_btn->setStyleSheet("height: 120px;border-radius: 15px;background-color: #393939;");
   reset_layout->addWidget(reset_calib_btn);
   QObject::connect(reset_calib_btn, &QPushButton::released, [=]() {
