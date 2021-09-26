@@ -288,6 +288,8 @@ static void ui_draw_vision_event(UIState *s) {
   bool is_engaged = (s->status == STATUS_ENGAGED) && ! steerOverride;
   bool is_warning = (s->status == STATUS_WARNING);
   bool is_engageable = s->scene.controls_state.getEngageable();
+  bool is_enabled = s->scene.controls_state.getEnabled();
+  float img_wheel_alpha = 0.15f;
   if (is_engaged || is_warning || is_engageable) {
     nvgBeginPath(s->vg);
     nvgCircle(s->vg, bg_wheel_x, bg_wheel_y, radius); // circle_size = 96
@@ -299,10 +301,10 @@ static void ui_draw_vision_event(UIState *s) {
       nvgFillColor(s->vg, COLOR_ENGAGEABLE_ALPHA(150));
     nvgFill(s->vg);
   }
-  bool is_enabled = s->scene.controls_state.getEnabled();
-  float img_wheel_alpha = 0.15f;
   if (is_enabled) {
     img_wheel_alpha = 1.0f;
+    } else {
+    img_wheel_alpha = 0.15f;
     }
   }
   nvgSave(s->vg);

@@ -475,7 +475,6 @@ QWidget * network_panel(QWidget * parent) {
     //if (ConfirmationDialog::confirm("Process?", w)){
     if (ConfirmationDialog::confirm("실행하시겠습니까?", w)) {
       std::system(addfunc);
-      QTimer::singleShot(1000, []() { Hardware::reboot(); });
     }
   });
   layout->addWidget(addfuncbtn);
