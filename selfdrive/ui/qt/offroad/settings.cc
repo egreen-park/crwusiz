@@ -202,15 +202,6 @@ DevicePanel::DevicePanel(QWidget* parent) : QWidget(parent) {
     });
   }
 
-  //auto uninstallBtn = new ButtonControl("Uninstall " + getBrand(), "UNINSTALL");
-  auto uninstallBtn = new ButtonControl(getBrand() + " 제거", "실행");
-  connect(uninstallBtn, &ButtonControl::clicked, [=]() {
-    //if (ConfirmationDialog::confirm("Process?", this)) {
-    if (ConfirmationDialog::confirm("실행하시겠습니까?", this)) {
-      Params().putBool("DoUninstall", true);
-    }
-  });
-
   ButtonControl *regulatoryBtn = nullptr;
   if (Hardware::TICI()) {
     regulatoryBtn = new ButtonControl("Regulatory", "VIEW", "");
@@ -220,7 +211,7 @@ DevicePanel::DevicePanel(QWidget* parent) : QWidget(parent) {
     });
   }
 
-  for (auto btn : {dcamBtn, resetCalibBtn, retrainingBtn, uninstallBtn, regulatoryBtn}) {
+  for (auto btn : {dcamBtn, retrainingBtn, regulatoryBtn, resetCalibBtn}) {
     if (btn) {
       connect(parent, SIGNAL(offroadTransition(bool)), btn, SLOT(setEnabled(false)));
       main_layout->addWidget(btn);
@@ -256,6 +247,9 @@ DevicePanel::DevicePanel(QWidget* parent) : QWidget(parent) {
     }
   });
   main_layout->addLayout(reset_layout);
+
+  QHBoxLayout *reset_layout = new QHBoxLayout();
+  reset_layout->setSpacing(30);
 
   const char* addfunc = "cp -f /data/openpilot/installer/fonts/driver_monitor.py /data/openpilot/selfdrive/monitoring";
   QPushButton *addfuncbtn = new QPushButton("추가기능");
@@ -353,6 +347,15 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : QWidget(parent) {
   for (int i = 0; i < std::size(widgets); ++i) {
     main_layout->addWidget(widgets[i]);
   }
+
+  auto uninstallBtn = new ButtonControl(getBrand() + " 제거", "실행");
+  connect(uninstallBtn, &ButtonControl::clicked, [=]() {
+    if (ConfirmationDialog::confirm("실행하시겠습니까?", this)) {
+      Params().putBool("DoUninstall", true);
+    }
+  });
+  connect(parent, SIGNAL(offroadTransition(bool)), uninstallBtn, SLOT(setEnabled(bool)));
+  main_layout->addWidget(uninstallBtn);
 
   fs_watch = new QFileSystemWatcher(this);
   QObject::connect(fs_watch, &QFileSystemWatcher::fileChanged, [=](const QString path) {
