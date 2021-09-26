@@ -227,22 +227,23 @@ static void ui_draw_vision_speed(UIState *s) {
   const int blinker_w = 280;
   const int blinker_x = s->fb_w/2 - 140;
   const int pos_add = 50;
+  int blinkingrate = 120;
+  bool leftBlinker = s->scene.car_state.getLeftBlinker();
+  bool rightBlinker = s->scene.car_state.getRightBlinker();
   bool is_warning = (s->status == STATUS_WARNING);
-  
-  if(s->scene.leftBlinker || s->scene.rightBlinker) {
-    s->scene.blinker_blinkingrate -= 5;
-    if(s->scene.blinker_blinkingrate < 0) s->scene.blinker_blinkingrate = 120;
 
-    float progress = (120 - s->scene.blinker_blinkingrate) / 120.0;
+  if(leftBlinker || rightBlinker) {
+    blinkingrate -= 5;
+    if(blinkingrate < 0) blinkingrate = 120;
+    float progress = (120 - blinkingrate) / 120.0;
     float offset = progress * (6.4 - 1.0) + 1.0;
+    float alpha = 1.0;
     if (offset < 1.0) offset = 1.0;
     if (offset > 6.4) offset = 6.4;
-
-    float alpha = 1.0;
     if (progress < 0.25) alpha = progress / 0.25;
     if (progress > 0.75) alpha = 1.0 - ((progress - 0.75) / 0.25);
 
-    if(s->scene.leftBlinker) {
+    if(leftBlinker) {
       nvgBeginPath(s->vg);
       nvgMoveTo(s->vg, blinker_x - (pos_add*offset), (header_h/4.2));
       nvgLineTo(s->vg, blinker_x - (pos_add*offset) - (blinker_w/2), (header_h/2.1));
@@ -255,7 +256,7 @@ static void ui_draw_vision_speed(UIState *s) {
       }
       nvgFill(s->vg);
     }
-    if(s->scene.rightBlinker) {
+    if(rightBlinker) {
       nvgBeginPath(s->vg);
       nvgMoveTo(s->vg, blinker_x + (pos_add*offset) + blinker_w, (header_h/4.2));
       nvgLineTo(s->vg, blinker_x + (pos_add*offset) + (blinker_w*1.5), (header_h/2.1));
@@ -287,26 +288,28 @@ static void ui_draw_vision_event(UIState *s) {
   bool is_engaged = (s->status == STATUS_ENGAGED) && ! steerOverride;
   bool is_warning = (s->status == STATUS_WARNING);
   bool is_engageable = s->scene.controls_state.getEngageable();
-  bool is_enabled = s->scene.controls_state.getEnabled();
-  if (is_engaged || is_warning || is_engageable || is_enabled) {
+  if (is_engaged || is_warning || is_engageable) {
     nvgBeginPath(s->vg);
     nvgCircle(s->vg, bg_wheel_x, bg_wheel_y, radius); // circle_size = 96
     if (is_engaged) {
-      nvgFillColor(s->vg, COLOR_ENGAGED_ALPHA(120));
+      nvgFillColor(s->vg, COLOR_ENGAGED_ALPHA(150));
     } else if (is_warning) {
-      nvgFillColor(s->vg, COLOR_WARNING_ALPHA(120));
+      nvgFillColor(s->vg, COLOR_WARNING_ALPHA(150));
     } else if (is_engageable) {
-      nvgFillColor(s->vg, COLOR_ENGAGEABLE_ALPHA(120));
-    } else if (is_enabled) {
-      nvgFillColor(s->vg, COLOR_BLACK_ALPHA(120));
-    }
+      nvgFillColor(s->vg, COLOR_ENGAGEABLE_ALPHA(150));
     nvgFill(s->vg);
+  }
+  bool is_enabled = s->scene.controls_state.getEnabled();
+  float img_wheel_alpha = 0.15f;
+  if (is_enabled) {
+    img_wheel_alpha = 1.0f;
+    }
   }
   nvgSave(s->vg);
   nvgTranslate(s->vg, bg_wheel_x, bg_wheel_y);
   nvgRotate(s->vg,-img_rotation);
   nvgBeginPath(s->vg);
-  NVGpaint imgPaint = nvgImagePattern(s->vg, img_wheel_x - bg_wheel_x, img_wheel_y - bg_wheel_y, img_wheel_size, img_wheel_size, 0,  s->images["wheel"], 1.0f);
+  NVGpaint imgPaint = nvgImagePattern(s->vg, img_wheel_x - bg_wheel_x, img_wheel_y - bg_wheel_y, img_wheel_size, img_wheel_size, 0,  s->images["wheel"], img_wheel_alpha);
   nvgRect(s->vg, img_wheel_x - bg_wheel_x, img_wheel_y - bg_wheel_y, img_wheel_size, img_wheel_size);
   nvgFillPaint(s->vg, imgPaint);
   nvgFill(s->vg);
@@ -393,22 +396,19 @@ static std::string get_tpms_text(float tpms) {
 }
 
 static void ui_draw_tpms(UIState *s) {
-    auto car_state = (*s->sm)["carState"].getCarState();
-    auto tpms = car_state.getTpms();
+    auto tpms = s->scene.car_state.getTpms();
     const float fl = tpms.getFl();
     const float fr = tpms.getFr();
     const float rl = tpms.getRl();
     const float rr = tpms.getRr();
-
     int margin = 10;
     int x = s->fb_w - 170;
     int y = 850;
     int w = 66;
     int h = 146;
-
     ui_draw_image(s, {x, y, w, h}, "tire_pressure", 0.8f);
 
-    nvgFontSize(s->vg, 60);
+    nvgFontSize(s->vg, 50);
     nvgFontFace(s->vg, "sans-semibold");
 
     nvgTextAlign(s->vg, NVG_ALIGN_RIGHT);
@@ -511,20 +511,21 @@ static void bb_ui_draw_measures_right(UIState *s, int bb_x, int bb_y, int bb_w) 
   int bb_ry = bb_y;
   int bb_h = 5;
   NVGcolor lab_color = COLOR_WHITE_ALPHA(200);
-  int value_fontSize=65;
-  int label_fontSize=35;
+  int value_fontSize=60;
+  int label_fontSize=40;
+  bool is_enabled = s->scene.controls_state.getEnabled();
 
   //add CPU temperature average
-  if (true) {
+  if (is_enabled) {
     char val_str[16];
     char val_add[4] = "℃";
     NVGcolor val_color = COLOR_ENGAGED;
       if((int)((scene->cpuTempAvg)) >= 70) {
         val_color = COLOR_WARNING;
-      } //show Orange if more than 70℃
+      } // Orange Color if more than 70℃
       if((int)((scene->cpuTempAvg)) >= 80) {
         val_color = COLOR_RED_ALPHA(200);
-      } //show Red if more than 80℃
+      } // Red Color if more than 80℃
     snprintf(val_str, sizeof(val_str), "%.0f", (round((scene->cpuTempAvg))));
     strcat(val_str, val_add);
     bb_h += bb_ui_draw_measure(s, val_str, "CPU 온도", bb_rx, bb_ry, val_color, lab_color, value_fontSize, label_fontSize);
@@ -532,7 +533,7 @@ static void bb_ui_draw_measures_right(UIState *s, int bb_x, int bb_y, int bb_w) 
   }
 
   //add visual radar relative distance
-  if (true) {
+  if (is_enabled) {
     auto radar_state = (*s->sm)["radarState"].getRadarState();
     auto lead_one = radar_state.getLeadOne();
     char val_str[16];
@@ -541,10 +542,10 @@ static void bb_ui_draw_measures_right(UIState *s, int bb_x, int bb_y, int bb_w) 
     if (lead_one.getStatus()) {
       if((int)(lead_one.getDRel()) < 15) {
         val_color = COLOR_WARNING;
-      } //show Orange if less than 15ｍ
+      } // Orange Color if less than 15ｍ
       if((int)(lead_one.getDRel()) < 5) {
         val_color = COLOR_RED_ALPHA(200);
-      } //show Red if less than 5ｍ
+      } // Red Color if less than 5ｍ
       snprintf(val_str, sizeof(val_str), "%.0f", lead_one.getDRel());
     } else {
       snprintf(val_str, sizeof(val_str), "-");
@@ -555,7 +556,7 @@ static void bb_ui_draw_measures_right(UIState *s, int bb_x, int bb_y, int bb_w) 
   }
 
   //add visual radar relative speed
-  if (true) {
+  if (is_enabled) {
     auto radar_state = (*s->sm)["radarState"].getRadarState();
     auto lead_one = radar_state.getLeadOne();
     char val_str[16];
@@ -564,10 +565,10 @@ static void bb_ui_draw_measures_right(UIState *s, int bb_x, int bb_y, int bb_w) 
     if (lead_one.getStatus()) {
       if((int)(lead_one.getVRel()) < 0) {
         val_color = COLOR_WARNING;
-      } //show Orange if negative speed
+      } // Orange Color if negative speed
       if((int)(lead_one.getVRel()) < -5) {
         val_color = COLOR_RED_ALPHA(200);
-      } //show Red if positive speed
+      } // Red Color if positive speed
       snprintf(val_str, sizeof(val_str), "%d", (int)(lead_one.getVRel() * 3.6 + 0.5));
     } else {
       snprintf(val_str, sizeof(val_str), "-");
@@ -578,17 +579,17 @@ static void bb_ui_draw_measures_right(UIState *s, int bb_x, int bb_y, int bb_w) 
   }
 
   //add steering angle degree
-  if (true) {
+  if (is_enabled) {
     float angleSteers = s->scene.car_state.getSteeringAngleDeg();
     char val_str[16];
     char val_add[4] = "˚";
     NVGcolor val_color = COLOR_ENGAGED;
     if(((int)(angleSteers) < -30) || ((int)(angleSteers) > 30)) {
       val_color = COLOR_WARNING;
-    } //show Orange if more than 30 degree
+    } // Orange color if more than 30˚
     if(((int)(angleSteers) < -90) || ((int)(angleSteers) > 90)) {
       val_color = COLOR_RED_ALPHA(200);
-    } //show Red if more than 90 degree
+    } // Red color if more than 90˚
     snprintf(val_str, sizeof(val_str), "%.1f",(angleSteers));
     strcat(val_str, val_add);
     bb_h += bb_ui_draw_measure(s, val_str, "핸들 조향각", bb_rx, bb_ry, val_color, lab_color, value_fontSize, label_fontSize);
@@ -596,7 +597,7 @@ static void bb_ui_draw_measures_right(UIState *s, int bb_x, int bb_y, int bb_w) 
   }
 
   //add desired steering angle degree
-  if (true) {
+  if (is_enabled) {
     auto carControl = (*s->sm)["carControl"].getCarControl();
     auto actuators = carControl.getActuators();
     float steeringAngleDeg  = actuators.getSteeringAngleDeg();
@@ -606,10 +607,10 @@ static void bb_ui_draw_measures_right(UIState *s, int bb_x, int bb_y, int bb_w) 
     if (scene->controls_state.getEnabled()) {
       if(((int)(steeringAngleDeg) < -30) || ((int)(steeringAngleDeg) > 30)) {
         val_color = COLOR_WARNING;
-      } //show Orange if more than 30 degree
+      } // Orange color if more than 30˚
       if(((int)(steeringAngleDeg) < -90) || ((int)(steeringAngleDeg) > 90)) {
         val_color = COLOR_RED_ALPHA(200);
-      } //show Red if more than 90 degree
+      } // Red color if more than 90˚
       snprintf(val_str, sizeof(val_str), "%.1f",(steeringAngleDeg));
     } else {
       snprintf(val_str, sizeof(val_str), "-");
@@ -644,10 +645,10 @@ static void bb_ui_draw_measures_right(UIState *s, int bb_x, int bb_y, int bb_w) 
 }
 
 static void bb_ui_draw_UI(UIState *s) {
-  const int bb_dmr_w = 180;
-  const int bb_dmr_x = s->fb_w - bb_dmr_w - (bdr_s*4.5);
-  const int bb_dmr_y = (bdr_s*4.5) + 200;
-  bb_ui_draw_measures_right(s, bb_dmr_x, bb_dmr_y, bb_dmr_w);
+  const int bb_right_w = 180;
+  const int bb_right_x = s->fb_w - bb_right_w * 1.25;
+  const int bb_right_y = bb_right_w * 1.5;
+  bb_ui_draw_measures_right(s, bb_right_x, bb_right_y, bb_right_w);
 }
 
 //END: functions added for the display of various items

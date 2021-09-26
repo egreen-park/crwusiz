@@ -122,12 +122,6 @@ typedef struct UIScene {
   bool world_objects_visible;
 
   // ui add
-  bool leftBlinker, rightBlinker;
-  bool leftblindspot, rightblindspot;
-  int blinker_blinkingrate;
-  bool batteryCharging;
-  int batteryPercent;
-  char batteryStatus[64];
   float cpuTempAvg;
   int lateralControlSelect;
   float output_scale;
