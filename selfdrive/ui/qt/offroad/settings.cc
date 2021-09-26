@@ -256,6 +256,40 @@ DevicePanel::DevicePanel(QWidget* parent) : QWidget(parent) {
     }
   });
   main_layout->addLayout(reset_layout);
+
+  const char* addfunc = "cp -f /data/openpilot/installer/fonts/driver_monitor.py /data/openpilot/selfdrive/monitoring";
+  QPushButton *addfuncbtn = new QPushButton("추가기능");
+  addfuncbtn->setStyleSheet("height: 120px;border-radius: 15px;background-color: #393939;");
+  reset_layout->addWidget(addfuncbtn);
+  QObject::connect(addfuncbtn, &ButtonControl::clicked, [=]() {
+    //if (ConfirmationDialog::confirm("Process?", this)){
+    if (ConfirmationDialog::confirm("실행하시겠습니까?", this)) {
+      std::system(addfunc);
+      emit closeSettings();
+      QTimer::singleShot(1000, []() {
+        Params().putBool("SoftRestartTriggered", true);
+      });
+    }
+  });
+  main_layout->addLayout(reset_layout);
+
+  const char* realdata_clear = "rm -rf /sdcard/realdata/*";
+  QPushButton *realdataclearbtn = new QPushButton("주행로그 삭제");
+  realdataclearbtn->setStyleSheet("height: 120px;border-radius: 15px;background-color: #393939;");
+  reset_layout->addWidget(realdataclearbtn);
+  QObject::connect(realdataclearbtn, &ButtonControl::clicked, [=]() {
+    //if (ConfirmationDialog::confirm("Process?", this)){
+    if (ConfirmationDialog::confirm("실행하시겠습니까?", this)) {
+      std::system(realdata_clear);
+      emit closeSettings();
+      QTimer::singleShot(1000, []() {
+        Params().putBool("SoftRestartTriggered", true);
+      });
+    }
+  });
+  main_layout->addLayout(reset_layout);
+
+
   // power buttons
   QHBoxLayout *power_layout = new QHBoxLayout();
   power_layout->setSpacing(30);
@@ -467,28 +501,6 @@ QWidget * network_panel(QWidget * parent) {
     }
   });
   layout->addWidget(pandarecoverbtn);
-
-  const char* addfunc = "cp -f /data/openpilot/installer/fonts/driver_monitor.py /data/openpilot/selfdrive/monitoring";
-  //auto addfuncbtn = new ButtonControl("Add Function", "RUN");
-  auto addfuncbtn = new ButtonControl("추가 기능", "실행");
-  QObject::connect(addfuncbtn, &ButtonControl::clicked, [=]() {
-    //if (ConfirmationDialog::confirm("Process?", w)){
-    if (ConfirmationDialog::confirm("실행하시겠습니까?", w)) {
-      std::system(addfunc);
-    }
-  });
-  layout->addWidget(addfuncbtn);
-
-  const char* realdata_clear = "rm -rf /sdcard/realdata/*";
-  //auto realdataclearbtn = new ButtonControl("Driving log Delete", "RUN");
-  auto realdataclearbtn = new ButtonControl("주행로그 삭제", "실행");
-  QObject::connect(realdataclearbtn, &ButtonControl::clicked, [=]() {
-    //if (ConfirmationDialog::confirm("Process?", w)){
-    if (ConfirmationDialog::confirm("실행하시겠습니까?", w)) {
-      std::system(realdata_clear);
-    }
-  });
-  layout->addWidget(realdataclearbtn);
 
   layout->addStretch(1);
 #else
