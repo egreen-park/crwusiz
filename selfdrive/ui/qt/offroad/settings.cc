@@ -248,7 +248,6 @@ DevicePanel::DevicePanel(QWidget* parent) : QWidget(parent) {
   });
   main_layout->addLayout(reset_layout);
 
-  QHBoxLayout *reset_layout = new QHBoxLayout();
   reset_layout->setSpacing(30);
 
   const char* addfunc = "cp -f /data/openpilot/installer/fonts/driver_monitor.py /data/openpilot/selfdrive/monitoring";
