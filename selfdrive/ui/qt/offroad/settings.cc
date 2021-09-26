@@ -261,7 +261,7 @@ DevicePanel::DevicePanel(QWidget* parent) : QWidget(parent) {
   QPushButton *addfuncbtn = new QPushButton("추가기능");
   addfuncbtn->setStyleSheet("height: 120px;border-radius: 15px;background-color: #393939;");
   reset_layout->addWidget(addfuncbtn);
-  QObject::connect(addfuncbtn, &ButtonControl::clicked, [=]() {
+  QObject::connect(addfuncbtn, &QPushButton::released, [=]() {
     //if (ConfirmationDialog::confirm("Process?", this)){
     if (ConfirmationDialog::confirm("실행하시겠습니까?", this)) {
       std::system(addfunc);
@@ -277,7 +277,7 @@ DevicePanel::DevicePanel(QWidget* parent) : QWidget(parent) {
   QPushButton *realdataclearbtn = new QPushButton("주행로그 삭제");
   realdataclearbtn->setStyleSheet("height: 120px;border-radius: 15px;background-color: #393939;");
   reset_layout->addWidget(realdataclearbtn);
-  QObject::connect(realdataclearbtn, &ButtonControl::clicked, [=]() {
+  QObject::connect(realdataclearbtn, &QPushButton::released, [=]() {
     //if (ConfirmationDialog::confirm("Process?", this)){
     if (ConfirmationDialog::confirm("실행하시겠습니까?", this)) {
       std::system(realdata_clear);
